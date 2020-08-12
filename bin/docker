@@ -1,0 +1,12 @@
+#!/bin/bash
+
+command="$1"
+args=( "$@" )
+
+if [ "$command" = "create" ] || [ "$command" = "exec" ] || [ "$command" = "run" ]
+then
+  args=( "${args[@]:0:1}" "--user" "$(id -u):$(id -g)" "${args[@]:1}" )
+fi
+
+
+/usr/bin/docker___ "${args[@]}"
