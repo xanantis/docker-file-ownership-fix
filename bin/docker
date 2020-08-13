@@ -1,0 +1,50 @@
+#!/bin/bash
+
+command="$1"
+args=( "$@" )
+
+function pick_one {
+  for var in "$@"
+  do
+    if [ ! -z "$var" ]; then
+      echo "$var"
+      break
+    fi
+  done
+}  
+
+
+if [ "$command" = "create" ] || [ "$command" = "exec" ] || [ "$command" = "run" ]
+then
+  if [ ! -z "$DOCKER_USER_OPTION" ]; then
+    docker_user=${DOCKER_USER_OPTION%:*}
+    docker_group=${DOCKER_USER_OPTION#*:}
+
+    if [ "$docker_user" = "$docker_group" ]; then 
+      docker_group=""
+    fi
+
+    if [ "$docker_user" = "\$USER" ]; then
+      docker_user=`pick_one "$USER" $(id -u)`
+    elif [ "$docker_user" = "\$UID" ]; then
+      docker_user=`pick_one "$UID" $(id -u)`
+    fi
+
+    if [ "$docker_group" = "\$GID" ]; then
+      docker_group=`pick_one "$GID" $(id -g)`
+    fi
+
+    DOCKER_USER_OPTION="$docker_user"
+
+    if [ ! -z "$docker_group" ]; then 
+      DOCKER_USER_OPTION+=":$docker_group"
+    fi
+
+    args=( "${args[@]:0:1}" "--user" "$DOCKER_USER_OPTION" "${args[@]:1}" )
+
+  fi
+
+fi
+
+
+/usr/bin/docker___ "${args[@]}"

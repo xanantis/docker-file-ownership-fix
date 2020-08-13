@@ -1,0 +1,15 @@
+name: 'Docker File Ownership Fix'
+description: 'Fixes ownership issues with files and directories after docker action usage. Use as last resort only!'
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        if [ ! -f /usr/bin/docker ] || [ -f /usr/bin/docker___ ] ; then
+          exit 0
+        fi
+        set -e
+        chmod +x $GITHUB_ACTION_PATH/bin/docker
+        sudo ln /usr/bin/docker /usr/bin/docker___
+        sudo cp "$GITHUB_ACTION_PATH/bin/docker" "$GITHUB_ACTION_PATH/bin/docker-copy" 
+        sudo mv "$GITHUB_ACTION_PATH/bin/docker-copy" /usr/bin/docker
+      shell: bash
